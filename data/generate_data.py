@@ -53,17 +53,28 @@ def create_table():
 
 
 # -----------------------------
-# BUSINESS LOGIC
+# ELIGIBILITY LOGIC (BALANCED)
 # -----------------------------
 def calculate_eligibility(total, category_credits, required_total):
-    if total < required_total:
-        return 0
+    score = 0
 
+    # Credit progress
+    if total >= 0.80 * required_total:
+        score += 1
+
+    # Category-wise completion
     for key, min_val in CREDIT_REQUIREMENTS.items():
-        if category_credits[key] < min_val:
-            return 0
+        if category_credits[key] >= min_val:
+            score += 1
 
-    return 1
+    # Rule-based eligibility
+    eligible = 1 if score >= 4 else 0
+
+    # FORCE CLASS BALANCE (CRITICAL FOR ML)
+    if random.random() < 0.30:
+        eligible = 1
+
+    return eligible
 
 
 def calculate_risk(total, required_total, eligible):
@@ -71,7 +82,6 @@ def calculate_risk(total, required_total, eligible):
         return "Low"
 
     progress = total / required_total
-
     if progress >= 0.7:
         return "Medium"
     return "High"
@@ -100,7 +110,7 @@ def generate_student():
         + short_iip
         + long_iip
         + effective_execution
-        + random.randint(20, 60)
+        + random.randint(40, 80)
     )
 
     category_credits = {
@@ -132,7 +142,7 @@ def generate_student():
     )
 
 
-def insert_students(n=500):
+def insert_students(n=800):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
 
@@ -163,5 +173,5 @@ def insert_students(n=500):
 # -----------------------------
 if __name__ == "__main__":
     create_table()
-    insert_students(800)
+    insert_students()
     print("Synthetic student data generated successfully.")
