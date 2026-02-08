@@ -1,13 +1,36 @@
 import sqlite3
 import pandas as pd
+
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.metrics import accuracy_score, precision_score, recall_score
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-DB_PATH = "students.db"
+# --------------------------------------------------
+# DATABASE PATH (FIXED)
+# --------------------------------------------------
+DB_PATH = "database/students.db"
+
+# --------------------------------------------------
+# FEATURE & TARGET COLUMNS
+# --------------------------------------------------
+FEATURE_COLS = [
+    "pep_credits",
+    "humanities_credits",
+    "sip_credits",
+    "short_iip_credits",
+    "long_iip_credits",
+    "effective_execution_credits",
+    "total_credits",
+    "year_of_study",
+]
+
+TARGET_COL = "degree_eligible"
 
 
+# --------------------------------------------------
+# DATA LOADING
+# --------------------------------------------------
 def load_data():
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql("SELECT * FROM students", conn)
@@ -16,49 +39,57 @@ def load_data():
 
 
 def prepare_data(df):
-    feature_cols = [
-        "pep_credits",
-        "humanities_credits",
-        "sip_credits",
-        "short_iip_credits",
-        "long_iip_credits",
-        "effective_execution_credits",
-        "total_credits",
-        "year_of_study",
-    ]
-
-    X = df[feature_cols]
-    y = df["degree_eligible"]
-
+    X = df[FEATURE_COLS]
+    y = df[TARGET_COL]
     return train_test_split(X, y, test_size=0.25, random_state=42)
 
 
-def evaluate_model(model, X_test, y_test, model_name):
-    preds = model.predict(X_test)
-
-    print(f"\n===== {model_name} Evaluation =====")
-    print("Accuracy:", accuracy_score(y_test, preds))
-    print("\nConfusion Matrix:")
-    print(confusion_matrix(y_test, preds))
-    print("\nClassification Report:")
-    print(classification_report(y_test, preds, zero_division=0))
-
-
-def main():
+# --------------------------------------------------
+# STREAMLIT-COMPATIBLE EVALUATION FUNCTION
+# --------------------------------------------------
+def evaluate_all_models():
     df = load_data()
     X_train, X_test, y_train, y_test = prepare_data(df)
 
-    print("\nClass distribution in test data:")
-    print(y_test.value_counts())
+    results = []
 
+    # Decision Tree
     dt = DecisionTreeClassifier(random_state=42)
-    rf = RandomForestClassifier(n_estimators=100, random_state=42)
-
     dt.fit(X_train, y_train)
-    rf.fit(X_train, y_train)
+    dt_preds = dt.predict(X_test)
 
-    evaluate_model(dt, X_test, y_test, "Decision Tree")
-    evaluate_model(rf, X_test, y_test, "Random Forest")
+    results.append({
+        "model": "Decision Tree",
+        "accuracy": accuracy_score(y_test, dt_preds),
+        "precision": precision_score(y_test, dt_preds, zero_division=0),
+        "recall": recall_score(y_test, dt_preds, zero_division=0),
+    })
+
+    # Random Forest
+    rf = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf.fit(X_train, y_train)
+    rf_preds = rf.predict(X_test)
+
+    results.append({
+        "model": "Random Forest",
+        "accuracy": accuracy_score(y_test, rf_preds),
+        "precision": precision_score(y_test, rf_preds, zero_division=0),
+        "recall": recall_score(y_test, rf_preds, zero_division=0),
+    })
+
+    return results
+
+
+# --------------------------------------------------
+# CLI DEBUG MODE (OPTIONAL)
+# --------------------------------------------------
+def main():
+    results = evaluate_all_models()
+    for r in results:
+        print(f"\n===== {r['model']} =====")
+        print("Accuracy:", r["accuracy"])
+        print("Precision:", r["precision"])
+        print("Recall:", r["recall"])
 
 
 if __name__ == "__main__":

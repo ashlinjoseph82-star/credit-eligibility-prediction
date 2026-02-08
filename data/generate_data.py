@@ -1,5 +1,6 @@
 import random
 import sqlite3
+from pathlib import Path
 
 # -----------------------------
 # DEGREE CONFIGURATION
@@ -19,8 +20,11 @@ CREDIT_REQUIREMENTS = {
     "long_iip": 10,
 }
 
-DB_PATH = "students.db"
-
+# -----------------------------
+# DATABASE PATH (SAFE)
+# -----------------------------
+BASE_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = BASE_DIR / "database" / "students.db"
 
 # -----------------------------
 # DATABASE SETUP
@@ -51,26 +55,32 @@ def create_table():
     conn.commit()
     conn.close()
 
+# -----------------------------
+# CLEAN DATABASE (IMPORTANT)
+# -----------------------------
+def clear_existing_data():
+    conn = sqlite3.connect(DB_PATH)
+    cur = conn.cursor()
+    cur.execute("DELETE FROM students")
+    conn.commit()
+    conn.close()
 
 # -----------------------------
-# ELIGIBILITY LOGIC (BALANCED)
+# ELIGIBILITY LOGIC
 # -----------------------------
 def calculate_eligibility(total, category_credits, required_total):
     score = 0
 
-    # Credit progress
     if total >= 0.80 * required_total:
         score += 1
 
-    # Category-wise completion
     for key, min_val in CREDIT_REQUIREMENTS.items():
         if category_credits[key] >= min_val:
             score += 1
 
-    # Rule-based eligibility
     eligible = 1 if score >= 4 else 0
 
-    # FORCE CLASS BALANCE (CRITICAL FOR ML)
+    # Force class balance
     if random.random() < 0.30:
         eligible = 1
 
@@ -85,7 +95,6 @@ def calculate_risk(total, required_total, eligible):
     if progress >= 0.7:
         return "Medium"
     return "High"
-
 
 # -----------------------------
 # DATA GENERATION
@@ -141,7 +150,6 @@ def generate_student():
         risk,
     )
 
-
 def insert_students(n=800):
     conn = sqlite3.connect(DB_PATH)
     cur = conn.cursor()
@@ -167,11 +175,11 @@ def insert_students(n=800):
     conn.commit()
     conn.close()
 
-
 # -----------------------------
 # MAIN
 # -----------------------------
 if __name__ == "__main__":
     create_table()
+    clear_existing_data()
     insert_students()
-    print("Synthetic student data generated successfully.")
+    print("✅ Synthetic student data regenerated successfully.")

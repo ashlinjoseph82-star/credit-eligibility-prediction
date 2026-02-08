@@ -1,14 +1,18 @@
 import sqlite3
 import pandas as pd
+from pathlib import Path
 
-DB_PATH = "students.db"
+# ==================================================
+# DATABASE PATH (ABSOLUTE & SAFE)
+# ==================================================
+BASE_DIR = Path(__file__).resolve().parent.parent
+DB_PATH = BASE_DIR / "database" / "students.db"
 
 def load_student_data():
     """
     Load student data from SQLite database into a pandas DataFrame
     """
     conn = sqlite3.connect(DB_PATH)
-    query = "SELECT * FROM students"
-    df = pd.read_sql_query(query, conn)
+    df = pd.read_sql_query("SELECT * FROM students", conn)
     conn.close()
     return df

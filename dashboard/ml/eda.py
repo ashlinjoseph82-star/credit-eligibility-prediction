@@ -2,18 +2,19 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 
 # ==================================================
-# DATABASE CONNECTION
+# DATABASE CONNECTION (FIXED)
 # ==================================================
-DB_PATH = "students.db"
+DB_PATH = "database/students.db"
+
 
 def load_data():
     conn = sqlite3.connect(DB_PATH)
     df = pd.read_sql("SELECT * FROM students", conn)
     conn.close()
     return df
+
 
 # ==================================================
 # MAIN EDA FUNCTION
@@ -45,82 +46,79 @@ def show_eda():
     # ==================================================
     # TARGET DISTRIBUTION
     # ==================================================
-    if "graduation_risk" in df.columns:
-        st.markdown("### 🎯 Graduation Risk Distribution")
+    st.markdown("### 🎯 Graduation Eligibility Distribution")
 
-        fig, ax = plt.subplots()
-        sns.countplot(
-            data=df,
-            x="graduation_risk",
-            palette="Reds",
-            ax=ax
-        )
-        ax.set_xlabel("Risk Category")
-        ax.set_ylabel("Number of Students")
+    fig, ax = plt.subplots()
+    df["degree_eligible"].value_counts().plot(
+        kind="bar",
+        ax=ax
+    )
+    ax.set_xlabel("Eligibility (0 = Not Eligible, 1 = Eligible)")
+    ax.set_ylabel("Number of Students")
 
-        st.pyplot(fig)
+    st.pyplot(fig)
 
-        st.info(
-            "This plot shows how students are distributed across risk categories. "
-            "Class imbalance is important when evaluating model performance."
-        )
+    st.info(
+        "This plot shows the distribution of students who are currently "
+        "eligible vs not eligible for graduation. Class balance affects "
+        "model performance and evaluation metrics."
+    )
 
-        st.divider()
+    st.divider()
 
     # ==================================================
     # CREDIT DISTRIBUTION
     # ==================================================
+    st.markdown("### 📚 Credit Distribution")
+
     credit_cols = [
-        "core_credits",
-        "ge_credits",
+        "pep_credits",
+        "humanities_credits",
         "sip_credits",
-        "iip_credits",
-        "ri_credits"
+        "short_iip_credits",
+        "long_iip_credits",
+        "effective_execution_credits",
+        "total_credits",
     ]
 
-    available_cols = [c for c in credit_cols if c in df.columns]
+    fig, ax = plt.subplots(figsize=(8, 4))
+    df[credit_cols].boxplot(ax=ax)
+    ax.set_ylabel("Credits")
+    ax.set_title("Distribution of Academic Credits")
 
-    if available_cols:
-        st.markdown("### 📚 Credit Distribution")
+    st.pyplot(fig)
 
-        fig, ax = plt.subplots(figsize=(8, 4))
-        df[available_cols].boxplot(ax=ax)
-        ax.set_ylabel("Credits")
-        ax.set_title("Credit Spread Across Categories")
+    st.info(
+        "Boxplots highlight variability and outliers in academic credit "
+        "categories, which can strongly influence graduation eligibility."
+    )
 
-        st.pyplot(fig)
-
-        st.info(
-            "Boxplots help identify credit imbalance and outliers, "
-            "which may strongly influence graduation risk."
-        )
-
-        st.divider()
+    st.divider()
 
     # ==================================================
-    # CORRELATION HEATMAP
+    # CORRELATION ANALYSIS
     # ==================================================
     st.markdown("### 🔗 Feature Correlation")
 
-    numeric_df = df.select_dtypes(include=["int64", "float64"])
+    numeric_df = df[credit_cols + ["year_of_study", "degree_eligible"]]
 
-    if numeric_df.shape[1] > 1:
-        fig, ax = plt.subplots(figsize=(8, 5))
-        sns.heatmap(
-            numeric_df.corr(),
-            annot=True,
-            cmap="coolwarm",
-            fmt=".2f",
-            ax=ax
-        )
-        ax.set_title("Correlation Between Numeric Features")
+    fig, ax = plt.subplots(figsize=(8, 5))
+    im = ax.imshow(numeric_df.corr(), cmap="coolwarm")
 
-        st.pyplot(fig)
+    ax.set_xticks(range(len(numeric_df.columns)))
+    ax.set_yticks(range(len(numeric_df.columns)))
+    ax.set_xticklabels(numeric_df.columns, rotation=45, ha="right")
+    ax.set_yticklabels(numeric_df.columns)
 
-        st.info(
-            "Correlation analysis helps understand which academic factors "
-            "are most related to graduation risk."
-        )
+    fig.colorbar(im, ax=ax)
+    ax.set_title("Correlation Between Numeric Features")
+
+    st.pyplot(fig)
+
+    st.info(
+        "Correlation analysis helps identify which academic factors "
+        "are most strongly associated with graduation eligibility."
+    )
 
     # ==================================================
     # EDA SUMMARY
@@ -128,10 +126,11 @@ def show_eda():
     st.success(
         """
         ✅ **EDA Summary**
-        - Identified risk distribution across students  
-        - Observed credit imbalances and variability  
-        - Analysed feature correlations for model relevance  
-        
-        These insights justify feature selection and model choice.
+        - Reviewed dataset structure and size  
+        - Analysed graduation eligibility distribution  
+        - Identified variability in academic credit categories  
+        - Examined correlations to justify feature selection  
+
+        These insights support the design and evaluation of the prediction models.
         """
     )
