@@ -1,232 +1,196 @@
 import streamlit as st
-import pandas as pd
 
+# ==================================================
+# PAGE CONFIG
+# ==================================================
 st.set_page_config(
-    page_title="Academic Self-Audit Dashboard",
+    page_title="Academic Self-Audit System",
     layout="wide",
 )
 
 # ==================================================
-# DEGREE RULES (B.Tech AI)
+# GLOBAL STYLES (SIDEBAR + ROUNDED WIDGETS)
 # ==================================================
-CREDIT_RULES = {
-    "Core": {"required": 120, "unlock_sem": 1},
-    "PEP": {"required": 20, "unlock_sem": 1, "lock_after": 3},   # first 1.5 years
-    "GE (Total)": {"required": 32, "unlock_sem": 1},
-    "Humanities": {"required": 18, "unlock_sem": 1},            # subset of GE
-    "Effective Execution": {"required": 6, "unlock_sem": 1},
-    "SIP": {"required": 12, "unlock_sem": 3},
-    "Short IIP": {"required": 8, "unlock_sem": 5},
-    "Long IIP": {"required": 16, "unlock_sem": 7},
-}
+st.markdown(
+    """
+    <style>
+    /* ===============================
+       SIDEBAR STYLING
+    =============================== */
+    section[data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #0f172a, #020617);
+        padding-top: 1.5rem;
+    }
 
-TOTAL_CREDITS = 194
+    section[data-testid="stSidebar"] * {
+        color: #e5e7eb !important;
+    }
 
-SEMESTER_EXPECTED = {
-    1: 20,
-    2: 40,
-    3: 62,
-    4: 86,
-    5: 112,
-    6: 140,
-    7: 170,
-    8: 194,
-}
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3 {
+        color: #ffffff !important;
+        letter-spacing: 0.5px;
+    }
 
-# ==================================================
-# HEADER
-# ==================================================
-st.title("📘 Academic Self-Audit Dashboard")
-st.caption(
-    "Evaluate your degree progress based on your **current academic stage**, "
-    "**earned credits**, and **future-locked requirements**."
+    section[data-testid="stSidebar"] hr {
+        border: none;
+        height: 1px;
+        background: linear-gradient(to right, #334155, transparent);
+        margin: 1rem 0;
+    }
+
+    /* ===============================
+       ROUNDED WIDGETS & CARDS
+    =============================== */
+    div[data-testid="stMetric"] {
+        background-color: #0e1117;
+        padding: 1rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    div[data-testid="stMetric"] label {
+        font-size: 0.85rem;
+        opacity: 0.8;
+    }
+
+    div[data-testid="stMetricValue"] {
+        font-size: 1.6rem;
+        font-weight: 600;
+    }
+
+    /* Buttons */
+    button[kind="primary"] {
+        border-radius: 12px !important;
+        padding: 0.5rem 1.2rem !important;
+        font-weight: 600;
+    }
+
+    /* Selectbox / Number input */
+    div[data-baseweb="select"],
+    div[data-baseweb="input"] {
+        border-radius: 12px !important;
+    }
+
+    /* Dataframe container */
+    div[data-testid="stDataFrame"] {
+        border-radius: 14px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    /* Main title */
+    .main-title {
+        font-size: 2.4rem;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+
+    /* Highlight info box */
+    .info-box {
+        background: rgba(255,255,255,0.04);
+        padding: 1.2rem;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
 )
 
-st.divider()
-
 # ==================================================
-# ACADEMIC POSITION (MAIN CANVAS)
+# SIDEBAR CONTENT
 # ==================================================
-st.subheader("🎓 Academic Position")
+with st.sidebar:
+    st.markdown("## 🎓 Academic Self-Audit")
+    st.caption("Credit Eligibility & Risk Prediction")
 
-col_pos1, col_pos2 = st.columns(2)
+    st.divider()
 
-with col_pos1:
-    semester = st.selectbox("Current Semester", list(range(1, 9)), index=3)
-
-with col_pos2:
+    st.markdown("### 🧭 Navigation")
     st.markdown(
-        f"**Academic Phase:** "
-        f"{'Final Phase' if semester >= 7 else 'Mid Phase' if semester >= 3 else 'Early Phase'}"
+        """
+        🤖 **Model & Prediction Analysis**  
+        📊 **Academic Insights & Visualisations**  
+        🎯 **Academic Progress Tracker**
+        """
     )
 
-st.divider()
+    st.divider()
+
+    st.markdown("### 🧠 What This System Does")
+    st.markdown(
+        """
+        - Tracks term-wise academic progress  
+        - Identifies graduation eligibility risks  
+        - Highlights credit distribution gaps  
+        - Explains ML-based predictions  
+        """
+    )
+
+    st.divider()
+
+    st.markdown("### ⚙️ Tech Stack")
+    st.markdown(
+        """
+        Python • Streamlit  
+        SQLite • Scikit-learn  
+        Rule-based + ML models
+        """
+    )
+
+    st.divider()
+    st.caption("Built for academic transparency & planning")
 
 # ==================================================
-# CREDIT INPUTS (MAIN CANVAS)
+# MAIN LANDING PAGE
 # ==================================================
-st.subheader("📥 Credits Earned So Far")
-
-c1, c2, c3 = st.columns(3)
-
-with c1:
-    core = st.number_input("Core Credits", 0, 120, 75)
-    pep = st.number_input("PEP Credits", 0, 20, 12)
-    execution = st.number_input("Effective Execution Credits", 0, 6, 3)
-
-with c2:
-    humanities = st.number_input("Humanities Credits (GE)", 0, 18, 10)
-    other_ge = st.number_input("Other GE Credits", 0, 32, 12)
-
-with c3:
-    sip = st.number_input("SIP Credits", 0, 12, 0)
-    short_iip = st.number_input("Short IIP Credits", 0, 8, 6)
-    long_iip = st.number_input("Long IIP Credits", 0, 16, 0)
-
-ge_total = humanities + other_ge
-
-earned_inputs = {
-    "Core": core,
-    "PEP": pep,
-    "GE (Total)": ge_total,
-    "Humanities": humanities,
-    "Effective Execution": execution,
-    "SIP": sip,
-    "Short IIP": short_iip,
-    "Long IIP": long_iip,
-}
-
-st.divider()
-
-# ==================================================
-# EVALUATION LOGIC
-# ==================================================
-rows = []
-earned_total = 0
-future_locked = 0
-pending = 0
-missing = []
-
-for cat, rule in CREDIT_RULES.items():
-    earned = earned_inputs[cat]
-    required = rule["required"]
-
-    # availability logic
-    available = semester >= rule["unlock_sem"]
-    if "lock_after" in rule and semester > rule["lock_after"]:
-        available = False
-
-    if available:
-        # avoid double counting Humanities (already inside GE)
-        if cat not in ["Humanities"]:
-            earned_total += earned
-
-        deficit = max(0, required - earned)
-        if deficit > 0:
-            missing.append(cat)
-            pending += deficit
-
-        status = "Completed" if earned >= required else "Pending"
-        progress = int((earned / required) * 100)
-        remaining = deficit
-    else:
-        future_locked += required
-        remaining = "-"
-        progress = "-"
-        status = "Not Available 🔒"
-
-    rows.append([
-        cat,
-        required,
-        earned,
-        remaining,
-        progress,
-        status,
-    ])
-
-expected_by_now = SEMESTER_EXPECTED[semester]
-performance_ratio = earned_total / max(expected_by_now, 1)
-
-if performance_ratio >= 1:
-    academic_status = "Eligible / On Track"
-    risk = "Low"
-    status_color = "success"
-elif performance_ratio >= 0.85:
-    academic_status = "On Track (Pending)"
-    risk = "Low"
-    status_color = "info"
-elif performance_ratio >= 0.7:
-    academic_status = "Attention Needed"
-    risk = "Medium"
-    status_color = "warning"
-else:
-    academic_status = "At Risk"
-    risk = "High"
-    status_color = "error"
-
-# ==================================================
-# STATUS CARD (BOLT-LIKE)
-# ==================================================
-getattr(st, status_color)(
-    f"**{academic_status}**  \n"
-    f"Credits Earned (Available): {earned_total} / {expected_by_now}"
+st.markdown(
+    '<div class="main-title">📘 Academic Self-Audit & Risk Prediction System</div>',
+    unsafe_allow_html=True
 )
 
-st.progress(min(earned_total / TOTAL_CREDITS, 1.0))
+st.write(
+    """
+    This system enables **early academic self-evaluation** by combining
+    **institutional academic rules** with **machine learning predictions**.
 
-# ==================================================
-# RISK INDICATOR
-# ==================================================
-st.subheader("📉 Graduation Risk")
-
-risk_map = {
-    "Low": "🟢 Low Risk",
-    "Medium": "🟡 Medium Risk",
-    "High": "🔴 High Risk",
-}
-st.markdown(f"### {risk_map[risk]}")
-
-# ==================================================
-# SUMMARY METRICS
-# ==================================================
-c1, c2, c3, c4 = st.columns(4)
-
-c1.metric("Credits Earned", earned_total)
-c2.metric("Expected by Now", expected_by_now)
-c3.metric("Pending Credits", pending)
-c4.metric("Future Locked", future_locked)
-
-# ==================================================
-# CREDIT BREAKDOWN TABLE
-# ==================================================
-st.subheader("📊 Credit Breakdown")
-
-df = pd.DataFrame(
-    rows,
-    columns=["Category", "Required", "Earned", "Remaining", "Progress %", "Status"]
+    Instead of discovering eligibility issues at the end of a degree,
+    students can identify risks **early and take corrective action**.
+    """
 )
 
-st.dataframe(df, use_container_width=True)
+st.divider()
 
-# ==================================================
-# MISSING REQUIREMENTS
-# ==================================================
-if missing:
-    st.warning("### Missing / Incomplete Requirements")
-    for m in missing:
-        st.write("•", m)
+st.subheader("📂 Application Modules")
 
-# ==================================================
-# NOTES
-# ==================================================
-st.info("""
-### Important Notes
-• **PEP is only available in Sem 1–3**  
-• **GE total includes Humanities credits**  
-• **Effective Execution credits are mandatory for degree completion**  
-• Locked credits are excluded from progress calculation  
-• SIP unlocks after Semester 2  
-• Short IIP unlocks after Semester 4  
-• Long IIP unlocks in the final year  
-• Evaluation is based only on credits available at the current stage
-""")
+st.markdown(
+    """
+    🤖 **Model & Prediction Analysis**  
+    Review trained machine learning models, compare accuracy, precision,
+    and recall, and understand model selection decisions.
+
+    📊 **Academic Insights & Visualisations**  
+    Explore interactive charts that reveal credit distribution,
+    progress trends, and academic imbalances.
+
+    🎓 **Academic Progress Tracker**  
+    Enter academic data to evaluate eligibility, pending credits,
+    and graduation risk in real time.
+    """
+)
+
+st.divider()
+
+st.markdown(
+    """
+    <div class="info-box">
+        👉 <b>Recommended Flow</b><br><br>
+        1️⃣ Enter data in <b>Academic Progress Tracker</b><br>
+        2️⃣ Analyse trends in <b>Academic Insights</b><br>
+        3️⃣ Validate predictions in <b>Model Analysis</b>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
