@@ -39,7 +39,7 @@ def prepare_data():
 def train_models():
     X_train, X_test, y_train, y_test = prepare_data()
 
-    print("\n📊 Class distribution in training data:")
+    print("\nClass distribution in training data:")
     print(y_train.value_counts())
 
     # Ensure models directory exists
@@ -56,9 +56,9 @@ def train_models():
     if y_train.nunique() > 1:
         models["Logistic Regression"] = LogisticRegression(max_iter=1000)
     else:
-        print("⚠️ Skipping Logistic Regression (only one class present)")
+        print("Skipping Logistic Regression (only one class present)")
 
-    print("\n🚀 Training Models...\n")
+    print("\n Training Models...\n")
 
     for name, model in models.items():
         model.fit(X_train, y_train)
@@ -66,13 +66,13 @@ def train_models():
         preds = model.predict(X_test)
         acc = accuracy_score(y_test, preds)
 
-        print(f"✅ {name} Accuracy: {acc:.2f}")
+        print(f" {name} Accuracy: {acc:.2f}")
 
         # Save (pickle) model
         file_name = name.lower().replace(" ", "_") + ".pkl"
         joblib.dump(model, f"models/{file_name}")
 
-        print(f"📦 Saved: models/{file_name}\n")
+        print(f" Saved: models/{file_name}\n")
 
 
 # ==================================================

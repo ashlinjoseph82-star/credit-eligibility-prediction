@@ -20,7 +20,7 @@ def load_data():
 # MAIN EDA FUNCTION
 # ==================================================
 def show_eda():
-    st.subheader("📊 Exploratory Data Analysis (EDA)")
+    st.subheader("Exploratory Data Analysis (EDA)")
 
     df = load_data()
 
@@ -31,7 +31,7 @@ def show_eda():
     # ==================================================
     # DATA OVERVIEW
     # ==================================================
-    st.markdown("### 📄 Dataset Overview")
+    st.markdown("### Dataset Overview")
     st.dataframe(df.head(), use_container_width=True)
 
     st.markdown(
@@ -46,7 +46,7 @@ def show_eda():
     # ==================================================
     # TARGET DISTRIBUTION
     # ==================================================
-    st.markdown("### 🎯 Graduation Eligibility Distribution")
+    st.markdown("### Graduation Eligibility Distribution")
 
     fig, ax = plt.subplots()
     df["degree_eligible"].value_counts().plot(
@@ -69,7 +69,7 @@ def show_eda():
     # ==================================================
     # CREDIT DISTRIBUTION
     # ==================================================
-    st.markdown("### 📚 Credit Distribution")
+    st.markdown("### Credit Distribution")
 
     credit_cols = [
         "pep_credits",
@@ -125,7 +125,7 @@ def show_eda():
     # ==================================================
     st.success(
         """
-        ✅ **EDA Summary**
+        **EDA Summary**
         - Reviewed dataset structure and size  
         - Analysed graduation eligibility distribution  
         - Identified variability in academic credit categories  

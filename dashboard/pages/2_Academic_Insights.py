@@ -9,7 +9,7 @@ st.set_page_config(
 # ==================================================
 # PAGE TITLE
 # ==================================================
-st.title("📊 Academic Insights & Visualisations")
+st.title(" Academic Insights & Visualisations")
 st.caption(
     "Visual insights generated dynamically from data entered in the "
     "**Academic Progress Tracker**."
@@ -29,8 +29,8 @@ required_keys = [
 
 if not all(k in st.session_state for k in required_keys):
     st.warning(
-        "⚠️ No academic data found.\n\n"
-        "👉 Please enter your credits in **Academic Progress Tracker** first."
+        " No academic data found.\n\n"
+        " Please enter your credits in **Academic Progress Tracker** first."
     )
     st.stop()
 
@@ -45,7 +45,7 @@ TOTAL_CREDITS = st.session_state["total_credits"]
 # ==================================================
 # CREDIT DISTRIBUTION BY CATEGORY
 # ==================================================
-st.subheader("📊 Credit Distribution by Category")
+st.subheader(" Credit Distribution by Category")
 
 experiential_total = (
     earned_inputs.get("SIP", 0)
@@ -83,7 +83,7 @@ st.divider()
 # ==================================================
 # REQUIRED VS EARNED COMPARISON
 # ==================================================
-st.subheader("📉 Required vs Earned Credits")
+st.subheader(" Required vs Earned Credits")
 
 comparison_df = pd.DataFrame({
     "Type": ["Earned", "Remaining"],
@@ -105,7 +105,7 @@ st.divider()
 # ==================================================
 # TERM-WISE PROGRESS TREND
 # ==================================================
-st.subheader("📈 Term-wise Progress Trend")
+st.subheader(" Term-wise Progress Trend")
 
 term_df = pd.DataFrame({
     "Term": list(TERM_EXPECTED.keys()),
@@ -126,7 +126,7 @@ st.divider()
 # ==================================================
 # INSIGHT SUMMARY
 # ==================================================
-st.subheader("🧠 Key Insights")
+st.subheader(" Key Insights")
 
 st.write(
     """

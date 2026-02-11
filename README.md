@@ -72,3 +72,14 @@ git clone https://github.com/<your-username>/credit-eligibility-prediction.git
 cd credit-eligibility-prediction
 python -m pip install -r requirements.txt
 streamlit run dashboard/app.py
+
+---
+
+## Project Status
+Model training and evaluation completed
+
+Dashboard implementation finalized
+
+Prediction pipeline ready for use
+
+Repository version-controlled and reproducible

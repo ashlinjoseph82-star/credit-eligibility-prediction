@@ -9,7 +9,7 @@ st.set_page_config(
 # ==================================================
 # PAGE TITLE
 # ==================================================
-st.title("🎓 Academic Progress Tracker")
+st.title(" Academic Progress Tracker")
 st.caption(
     "Track your academic standing in real time using term-wise progress "
     "and official degree credit requirements."
@@ -29,7 +29,7 @@ DEGREE_CONFIG = {
 TERMS_PER_YEAR = 4
 
 degree = st.selectbox(
-    "🎓 Select Degree Program",
+    " Select Degree Program",
     list(DEGREE_CONFIG.keys())
 )
 
@@ -66,7 +66,7 @@ CREDIT_RULES = {
 # ==================================================
 # ACADEMIC POSITION
 # ==================================================
-st.subheader("📍 Current Academic Position")
+st.subheader("Current Academic Position")
 
 col1, col2 = st.columns(2)
 
@@ -87,7 +87,7 @@ st.divider()
 # ==================================================
 # CREDIT INPUTS (CORE UNCAPPED)
 # ==================================================
-st.subheader("📥 Credits Earned So Far")
+st.subheader(" Credits Earned So Far")
 
 # -------- ROW 1 --------
 r1c1, r1c2, r1c3 = st.columns(3)
@@ -177,7 +177,7 @@ for cat, rule in CREDIT_RULES.items():
         remaining = deficit
     else:
         future_locked += required
-        status = "Not Available 🔒"
+        status = "Not Available "
         progress = "-"
         remaining = "-"
 
@@ -213,7 +213,7 @@ getattr(st, color)(
 
 st.progress(min(earned_total / TOTAL_CREDITS, 1.0))
 
-st.subheader("📉 Graduation Risk")
+st.subheader("Graduation Risk")
 st.markdown(
     f"### {'🟢 Low Risk' if risk=='Low' else '🟡 Medium Risk' if risk=='Medium' else '🔴 High Risk'}"
 )
@@ -232,7 +232,7 @@ c4.metric("Future Locked", future_locked)
 # ==================================================
 # CREDIT TABLE
 # ==================================================
-st.subheader("📊 Credit Breakdown")
+st.subheader(" Credit Breakdown")
 
 df = pd.DataFrame(
     rows,

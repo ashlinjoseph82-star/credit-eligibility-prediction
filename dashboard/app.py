@@ -9,7 +9,7 @@ st.set_page_config(
 )
 
 # ==================================================
-# GLOBAL STYLES (SIDEBAR + ROUNDED WIDGETS)
+# GLOBAL STYLES 
 # ==================================================
 st.markdown(
     """
@@ -103,23 +103,23 @@ st.markdown(
 # SIDEBAR CONTENT
 # ==================================================
 with st.sidebar:
-    st.markdown("## 🎓 Academic Self-Audit")
+    st.markdown("##  Academic Self-Audit")
     st.caption("Credit Eligibility & Risk Prediction")
 
     st.divider()
 
-    st.markdown("### 🧭 Navigation")
+    st.markdown("###  Navigation")
     st.markdown(
         """
-        🤖 **Model & Prediction Analysis**  
-        📊 **Academic Insights & Visualisations**  
-        🎯 **Academic Progress Tracker**
+         **Model & Prediction Analysis**  
+         **Academic Insights & Visualisations**  
+         **Academic Progress Tracker**
         """
     )
 
     st.divider()
 
-    st.markdown("### 🧠 What This System Does")
+    st.markdown("### What This System Does")
     st.markdown(
         """
         - Tracks term-wise academic progress  
@@ -131,7 +131,7 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("### ⚙️ Tech Stack")
+    st.markdown("### Tech Stack")
     st.markdown(
         """
         Python • Streamlit  
@@ -147,7 +147,7 @@ with st.sidebar:
 # MAIN LANDING PAGE
 # ==================================================
 st.markdown(
-    '<div class="main-title">📘 Academic Self-Audit & Risk Prediction System</div>',
+    '<div class="main-title"> Academic Self-Audit & Risk Prediction System</div>',
     unsafe_allow_html=True
 )
 
@@ -163,19 +163,19 @@ st.write(
 
 st.divider()
 
-st.subheader("📂 Application Modules")
+st.subheader(" Application Modules")
 
 st.markdown(
     """
-    🤖 **Model & Prediction Analysis**  
+    **Model & Prediction Analysis**  
     Review trained machine learning models, compare accuracy, precision,
     and recall, and understand model selection decisions.
 
-    📊 **Academic Insights & Visualisations**  
+    **Academic Insights & Visualisations**  
     Explore interactive charts that reveal credit distribution,
     progress trends, and academic imbalances.
 
-    🎓 **Academic Progress Tracker**  
+    **Academic Progress Tracker**  
     Enter academic data to evaluate eligibility, pending credits,
     and graduation risk in real time.
     """
@@ -186,10 +186,10 @@ st.divider()
 st.markdown(
     """
     <div class="info-box">
-        👉 <b>Recommended Flow</b><br><br>
-        1️⃣ Enter data in <b>Academic Progress Tracker</b><br>
-        2️⃣ Analyse trends in <b>Academic Insights</b><br>
-        3️⃣ Validate predictions in <b>Model Analysis</b>
+         <b>Recommended Flow</b><br><br>
+        1️ Enter data in <b>Academic Progress Tracker</b><br>
+        2️ Analyse trends in <b>Academic Insights</b><br>
+        3️ Validate predictions in <b>Model Analysis</b>
     </div>
     """,
     unsafe_allow_html=True
