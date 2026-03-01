@@ -1,85 +1,100 @@
-# Credit Completion & Degree Eligibility Prediction System
+# Smart System for Academic Progression Analysis and Graduation Delay Prediction
 
-This project predicts degree eligibility and graduation risk for university students based on category-wise credit completion under a credit-based academic structure.
+This project predicts graduation delay risk for university students based on structured, category-wise credit completion within a credit-based academic framework.
 
-The system is designed as an academic decision-support tool that reflects how universities evaluate student progress. It focuses on identifying potential graduation risks early, without penalizing students for credits that are not yet available according to academic timelines.
+The system functions as an academic decision-support tool that analyzes progression patterns and estimates the probability of delayed graduation using traditional machine learning models. It enables early risk identification beyond deterministic eligibility checks.
 
 ---
 
 ## Project Objectives
 
 - Assess whether a student is currently on track for graduation  
-- Identify graduation risk levels (Low, Medium, High)  
-- Provide early warnings based on academic credit patterns  
+- Estimate the probability of graduation delay  
+- Categorize risk levels (Low, Medium, High)  
+- Provide early warnings based on academic progression patterns  
 - Support students and administrators with data-driven insights  
 
 ---
 
 ## System Overview
 
-The project follows a production-style machine learning workflow, including:
+The project follows a modular, production-oriented machine learning workflow:
 
 - Synthetic academic data generation  
-- SQL-based data storage  
-- Training and evaluation of traditional machine learning models  
-- Model comparison and selection  
-- Prediction-ready inference pipeline  
-- Interactive Streamlit dashboard for analysis and predictions  
-- Version-controlled development lifecycle  
+- SQLite-based structured data storage  
+- Data preprocessing and model training pipelines  
+- Evaluation and comparison of traditional ML models  
+- Version-controlled model storage and metadata tracking  
+- FastAPI-based prediction and retraining endpoints  
+- React-based interactive dashboard for analysis and predictions  
+- Full frontend–backend integration  
+
+The system emphasizes maintainability, lifecycle management, and structured deployment practices.
 
 ---
 
 ## Machine Learning Models
 
-The following models were trained and evaluated:
+The following traditional models were implemented and evaluated:
 
-- **Logistic Regression** – baseline model with interpretability  
-- **Decision Tree** – captures non-linear academic patterns  
-- **Random Forest** – selected as the final deployed model  
+- Logistic Regression  
+- Decision Tree  
+- Random Forest  
+- Gradient Boosting  
+- XGBoost  
 
-The Random Forest classifier was chosen due to its stronger performance across accuracy, precision, and recall, as well as its robustness and generalization ability.
+Models are evaluated using:
+
+- Accuracy  
+- Precision  
+- Recall  
+- F1-score  
+
+The best-performing model is automatically selected for deployment within the prediction pipeline.
 
 ---
 
 ## Dashboard Features
 
-The interactive dashboard allows users to:
+The interactive frontend allows users to:
 
-- View academic credit summaries  
+- View category-wise credit completion summaries  
+- Analyze internship and course failure indicators  
 - Compare model performance metrics  
-- Explore data through visual analysis  
-- Generate graduation eligibility predictions  
-- Understand graduation risk levels at different academic stages  
+- Generate graduation delay predictions  
+- View probability-based risk levels (Low / Medium / High)  
+- Monitor model version information  
+
+The system distinguishes between rule-based eligibility checks and predictive risk estimation.
 
 ---
 
 ## Technology Stack
 
+### Backend
 - Python  
-- Streamlit  
-- Pandas and NumPy  
+- FastAPI  
 - Scikit-learn  
-- Matplotlib and Seaborn  
+- XGBoost  
 - SQLite  
-- Git and GitHub  
+
+### Frontend
+- React (Vite + TypeScript)  
+- Tailwind CSS  
+- Recharts  
+
+### Development
+- Git & GitHub  
+- Modular project structure  
+- Version-controlled model lifecycle  
 
 ---
 
 ## Running the Project Locally
 
+### Backend
+
 ```bash
-git clone https://github.com/<your-username>/credit-eligibility-prediction.git
-cd credit-eligibility-prediction
-python -m pip install -r requirements.txt
-streamlit run dashboard/app.py
-
----
-
-## Project Status
-Model training and evaluation completed
-
-Dashboard implementation finalized
-
-Prediction pipeline ready for use
-
-Repository version-controlled and reproducible
+cd Backend
+pip install -r requirements.txt
+uvicorn main:app --reload
