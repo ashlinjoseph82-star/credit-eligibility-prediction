@@ -21,11 +21,11 @@ DB_PATH = BASE_DIR / "database" / "students.db"
 # --------------------------------------------------
 # App Initialization
 # --------------------------------------------------
-app = FastAPI(title="Academic AI Guard API", version="3.0.0")
+app = FastAPI(title="Academic AI Guard API", version="3.2.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # restrict in production
+    allow_origins=["*"],  # Restrict in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -76,7 +76,7 @@ class StudentInput(BaseModel):
 
 
 # --------------------------------------------------
-# Predict Endpoint
+# Predict Endpoint (Robust Probability Handling)
 # --------------------------------------------------
 @app.post("/predict")
 def predict(data: StudentInput):
@@ -89,19 +89,40 @@ def predict(data: StudentInput):
 
     try:
         prediction = model.predict(df)[0]
-        probability = model.predict_proba(df)[0][1]
+
+        # --- SAFE probability extraction ---
+        proba = model.predict_proba(df)[0]
+        classes = list(model.classes_)
+
+        # Handle both numeric and string labels safely
+        if 1 in classes:
+            delayed_index = classes.index(1)
+        elif "Delayed" in classes:
+            delayed_index = classes.index("Delayed")
+        else:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Unexpected model classes: {classes}"
+            )
+
+        probability = float(proba[delayed_index])
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-    risk_level = (
-        "High" if probability > 0.7
-        else "Medium" if probability > 0.4
-        else "Low"
-    )
+    probability_percent = probability * 100
+
+    # Aligned Risk Thresholds
+    if probability_percent >= 70:
+        risk_level = "High"
+    elif probability_percent >= 40:
+        risk_level = "Medium"
+    else:
+        risk_level = "Low"
 
     return {
         "prediction": "Delayed" if prediction == 1 else "On-Time",
-        "probability": round(float(probability) * 100, 2),
+        "probability": round(probability_percent, 2),
         "risk_level": risk_level,
         "model_version": version,
         "model_used": model_used,
@@ -109,7 +130,7 @@ def predict(data: StudentInput):
 
 
 # --------------------------------------------------
-# Model Info Endpoint (FIXED FOR FRONTEND)
+# Model Info Endpoint
 # --------------------------------------------------
 @app.get("/model-info")
 def model_info():
@@ -123,10 +144,8 @@ def model_info():
         raise HTTPException(status_code=500, detail="No training history found.")
 
     latest_entry = metadata["history"][-1]
-
     metrics = latest_entry["models"]
 
-    # Automatically select best model by accuracy
     selected_model = max(
         metrics,
         key=lambda m: metrics[m]["accuracy"]

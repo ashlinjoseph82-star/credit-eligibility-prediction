@@ -1,5 +1,5 @@
 // -------------------------------------------
-// Academic AI Guard - Full API Layer (FINAL FIXED)
+// Academic AI Guard - Full API Layer (STABLE)
 // -------------------------------------------
 
 const BASE_URL = "http://127.0.0.1:8000";
@@ -29,17 +29,18 @@ export interface SummaryResponse {
   on_time_percentage: number;
 }
 
+// ✅ FIXED to match backend structure
 export interface ModelInfoResponse {
   version: string;
+  selected_model: string;
   dataset_size: number;
-  trained_on: string;
-  models: Record<
+  metrics: Record<
     string,
     {
       accuracy: number;
       precision: number;
       recall: number;
-      f1: number;
+      f1_score: number;
     }
   >;
 }
@@ -74,7 +75,7 @@ async function safeFetch(url: string, options?: RequestInit) {
 }
 
 // -------------------------------------------
-// MODEL NAME MAPPING (NOW CORRECT)
+// MODEL NAME MAPPING
 // -------------------------------------------
 
 function mapModelName(uiModel: string): string {
@@ -151,7 +152,7 @@ export async function predictRisk(
   return {
     risk_level: backendResult.risk_level,
     probability: backendResult.probability,
-    confidence: 90,
+    confidence: 100 - backendResult.probability, // more logical than fixed 90
     insights: [
       `Model version ${backendResult.model_version} used.`,
       `Model selected: ${backendResult.model_used}.`,

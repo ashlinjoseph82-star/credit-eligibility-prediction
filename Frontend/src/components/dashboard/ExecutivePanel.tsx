@@ -6,13 +6,13 @@ import {
   getTotalEarned,
   DEGREE_OPTIONS,
 } from "@/lib/academic-rules";
-import { predictStudent } from "@/lib/api";
+import { predictStudent, getModelInfo } from "@/lib/api";
 import { RadialBarChart, RadialBar, ResponsiveContainer } from "recharts";
 import { Shield, AlertTriangle, AlertCircle } from "lucide-react";
 
 type BackendPrediction = {
   prediction: "On-Time" | "Delayed";
-  probability: number; // already 0–100
+  probability: number;
   risk_level: "Low" | "Medium" | "High";
   model_version: string;
   model_used: string;
@@ -20,7 +20,9 @@ type BackendPrediction = {
 
 export function ExecutivePanel() {
   const { degree, term, credits, model } = useAppState();
+
   const [prediction, setPrediction] = useState<BackendPrediction | null>(null);
+  const [modelInfo, setModelInfo] = useState<any>(null);
 
   const termNum = parseInt(term.replace("Term ", "")) || 4;
   const config = DEGREE_OPTIONS[degree];
@@ -29,14 +31,14 @@ export function ExecutivePanel() {
   const expectedCredits = getExpectedByTerm(degree, termNum);
   const deviation = totalEarned - expectedCredits;
 
-  // -----------------------------
-  // Call Backend Prediction
-  // -----------------------------
+  // --------------------------------------------------
+  // Fetch Prediction
+  // --------------------------------------------------
   useEffect(() => {
     async function runPrediction() {
       try {
         const result = await predictStudent({
-          model, // 🔥 important
+          model,
           semester: termNum,
           core_credits: credits.core ?? 0,
           pep_credits: credits.pep ?? 0,
@@ -57,16 +59,27 @@ export function ExecutivePanel() {
     runPrediction();
   }, [model, degree, term, credits]);
 
-  // -----------------------------
-  // Derived UI Values
-  // -----------------------------
-  const completion = getCompletionPct(degree, credits);
-  const expectedPct = config
-    ? Math.round((expectedCredits / config.totalCredits) * 100)
-    : 0;
+  // --------------------------------------------------
+  // Fetch Model Metrics
+  // --------------------------------------------------
+  useEffect(() => {
+    async function loadModelInfo() {
+      try {
+        const info = await getModelInfo();
+        setModelInfo(info);
+      } catch (err) {
+        console.error("Model info failed:", err);
+      }
+    }
 
+    loadModelInfo();
+  }, []);
+
+  // --------------------------------------------------
+  // Derived UI Values
+  // --------------------------------------------------
   const riskLevel = prediction?.risk_level ?? "Medium";
-  const probabilityPct = prediction?.probability ?? 0; // 🔥 already %
+  const probabilityPct = prediction?.probability ?? 0;
 
   const riskColor =
     riskLevel === "Low"
@@ -108,6 +121,24 @@ export function ExecutivePanel() {
     },
   ];
 
+  const selectedModel = modelInfo?.selected_model;
+
+  const accuracy = modelInfo
+    ? (modelInfo.metrics[selectedModel]?.accuracy * 100).toFixed(2)
+    : "--";
+
+  const f1 = modelInfo
+    ? (modelInfo.metrics[selectedModel]?.f1 * 100).toFixed(2)
+    : "--";
+
+  const precision = modelInfo
+    ? (modelInfo.metrics[selectedModel]?.precision * 100).toFixed(2)
+    : "--";
+
+  const recall = modelInfo
+    ? (modelInfo.metrics[selectedModel]?.recall * 100).toFixed(2)
+    : "--";
+
   return (
     <div className="glass-card-glow p-5 animate-fade-in-up">
       <div className="flex items-start justify-between gap-6">
@@ -124,6 +155,7 @@ export function ExecutivePanel() {
             </span>
           </div>
 
+          {/* ------------------ MODEL PERFORMANCE ------------------ */}
           <div className="grid grid-cols-2 gap-x-8 gap-y-3 lg:grid-cols-4">
             <MetricItem
               label="Risk Level"
@@ -131,45 +163,32 @@ export function ExecutivePanel() {
               valueClass={riskColor}
             />
             <MetricItem
-              label="AI Prediction"
-              value={`${probabilityPct}%`}
-              valueClass="text-primary"
+              label="Model Accuracy"
+              value={`${accuracy}%`}
             />
             <MetricItem
-              label="Model Used"
-              value={prediction?.model_used ?? model}
-              valueClass="text-accent"
+              label="F1 Score"
+              value={`${f1}%`}
             />
             <MetricItem
-              label="Completion"
-              value={`${completion}%`}
+              label="Precision"
+              value={`${precision}%`}
+            />
+            <MetricItem
+              label="Recall"
+              value={`${recall}%`}
             />
           </div>
 
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span>
-              Expected Progress:{" "}
-              <span className="font-medium">
-                {expectedPct}%
-              </span>
-            </span>
-            <span>•</span>
-            <span>
-              Deviation:{" "}
-              <span
-                className={
-                  completion >= expectedPct
-                    ? "text-success"
-                    : "text-warning"
-                }
-              >
-                {completion - expectedPct > 0 ? "+" : ""}
-                {completion - expectedPct}%
-              </span>
+          <div className="text-xs text-muted-foreground">
+            Target Variable:{" "}
+            <span className="font-medium">
+              Graduation Outcome (On-Time vs Delayed)
             </span>
           </div>
         </div>
 
+        {/* ------------------ PREDICTION GAUGE ------------------ */}
         <div className="flex-shrink-0 w-[130px] h-[130px]">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
@@ -193,7 +212,7 @@ export function ExecutivePanel() {
             {probabilityPct}%
           </p>
           <p className="text-center text-[10px] text-muted-foreground mt-0.5">
-            Prediction Score
+            Probability of Delay
           </p>
         </div>
       </div>
