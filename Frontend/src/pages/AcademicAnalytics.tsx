@@ -21,8 +21,15 @@ import {
   CartesianGrid,
   RadialBarChart,
   RadialBar,
+  BarChart,
+  Bar,
 } from "recharts";
-import { Sparkles, TrendingUp, AlertTriangle } from "lucide-react";
+import {
+  Sparkles,
+  TrendingUp,
+  AlertTriangle,
+  Brain,
+} from "lucide-react";
 
 const COLORS = [
   "hsl(185, 75%, 50%)",
@@ -68,9 +75,10 @@ const AcademicAnalytics = () => {
   const totalEarned = getTotalEarned(credits);
   const completion = getCompletionPct(degree, credits);
 
-  // -------------------------
-  // Credit Distribution
-  // -------------------------
+  // ------------------------------------------------
+  // Experiential Credits
+  // ------------------------------------------------
+
   const experiential =
     credits.pep +
     credits.sip +
@@ -87,42 +95,72 @@ const AcademicAnalytics = () => {
     FIXED_REQUIREMENTS.ee +
     FIXED_REQUIREMENTS.ri;
 
+  // ------------------------------------------------
+  // Credit Distribution
+  // ------------------------------------------------
+
   const donutData = [
     { name: "Core", value: credits.core },
     { name: "GE", value: credits.ge },
     { name: "Experiential", value: experiential },
   ];
 
-  // -------------------------
-  // Trajectory Data
-  // -------------------------
-  const totalTerms = config.totalTerms;
+  // ------------------------------------------------
+  // Progress vs Expected
+  // ------------------------------------------------
 
-  const trajectoryData = Array.from(
-    { length: totalTerms },
+  const progressData = Array.from(
+    { length: config.totalTerms },
     (_, i) => {
       const t = i + 1;
-      const expected = getExpectedByTerm(degree, t);
-      const student =
-        t <= termNum
-          ? Math.round(totalEarned * (t / termNum))
-          : null;
-
       return {
         term: `T${t}`,
-        Expected: expected,
-        Student: student,
+        expected: getExpectedByTerm(degree, t),
+        actual:
+          t <= termNum
+            ? Math.round(totalEarned * (t / termNum))
+            : null,
       };
     }
   );
 
-  // -------------------------
-  // Gauge
-  // -------------------------
+  // ------------------------------------------------
+  // Completion Gauge
+  // ------------------------------------------------
+
   const gaugeData = [
     {
       value: completion,
       fill: "hsl(185, 75%, 50%)",
+    },
+  ];
+
+  // ------------------------------------------------
+  // Risk Segmentation
+  // ------------------------------------------------
+
+  const riskSegments = [
+    { level: "Low", value: 56 },
+    { level: "Medium", value: 30 },
+    { level: "High", value: 14 },
+  ];
+
+  // ------------------------------------------------
+  // Credit Breakdown
+  // ------------------------------------------------
+
+  const creditBreakdown = [
+    {
+      category: "Core",
+      earned: credits.core,
+    },
+    {
+      category: "GE",
+      earned: credits.ge,
+    },
+    {
+      category: "Experiential",
+      earned: experiential,
     },
   ];
 
@@ -136,19 +174,63 @@ const AcademicAnalytics = () => {
       ? "text-warning"
       : "text-destructive";
 
-  // -------------------------
+  // ------------------------------------------------
   // UI
-  // -------------------------
+  // ------------------------------------------------
+
   return (
-    <div className="space-y-4">
-      <h2 className="text-lg font-semibold">
+    <div className="space-y-6">
+
+      <h2 className="text-lg font-semibold flex items-center gap-2">
+        <Brain className="h-5 w-5 text-primary" />
         Academic Analytics
       </h2>
 
-      {/* Top Row */}
+      {/* Progress vs Expected */}
+
+      <div className="glass-card p-4">
+
+        <h3 className="text-sm font-semibold mb-3">
+          Academic Progress vs Expected
+        </h3>
+
+        <ResponsiveContainer width="100%" height={260}>
+          <LineChart data={progressData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="term" />
+            <YAxis />
+            <Tooltip />
+
+            <Line
+              type="monotone"
+              dataKey="expected"
+              stroke="hsl(215,15%,50%)"
+              strokeDasharray="5 5"
+              strokeWidth={2}
+              dot={false}
+            />
+
+            <Line
+              type="monotone"
+              dataKey="actual"
+              stroke="hsl(185,75%,50%)"
+              strokeWidth={2}
+              dot={{ r: 3 }}
+            />
+
+          </LineChart>
+        </ResponsiveContainer>
+
+      </div>
+
+      {/* Middle Row */}
+
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Donut */}
+
+        {/* Credit Distribution */}
+
         <div className="glass-card p-4">
+
           <h3 className="text-sm font-semibold mb-2">
             Credit Distribution
           </h3>
@@ -165,55 +247,38 @@ const AcademicAnalytics = () => {
                 dataKey="value"
               >
                 {donutData.map((_, i) => (
-                  <Cell
-                    key={i}
-                    fill={COLORS[i]}
-                    stroke="none"
-                  />
+                  <Cell key={i} fill={COLORS[i]} />
                 ))}
               </Pie>
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
+
         </div>
 
-        {/* Trajectory */}
-        <div className="glass-card p-4 lg:col-span-2">
+        {/* Credit Breakdown */}
+
+        <div className="glass-card p-4">
+
           <h3 className="text-sm font-semibold mb-2">
-            Credit Trajectory
+            Credit Category Breakdown
           </h3>
 
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={trajectoryData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="term" />
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={creditBreakdown}>
+              <XAxis dataKey="category" />
               <YAxis />
               <Tooltip />
-              <Line
-                type="monotone"
-                dataKey="Expected"
-                stroke="hsl(215, 15%, 50%)"
-                strokeDasharray="5 5"
-                strokeWidth={2}
-                dot={false}
-              />
-              <Line
-                type="monotone"
-                dataKey="Student"
-                stroke="hsl(185, 75%, 50%)"
-                strokeWidth={2}
-                dot={{ r: 3 }}
-                connectNulls={false}
-              />
-            </LineChart>
+              <Bar dataKey="earned" fill="hsl(185,75%,50%)" />
+            </BarChart>
           </ResponsiveContainer>
-        </div>
-      </div>
 
-      {/* Bottom Row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        </div>
+
         {/* Completion Gauge */}
+
         <div className="glass-card p-4 flex flex-col items-center">
+
           <h3 className="text-sm font-semibold mb-2">
             Overall Completion
           </h3>
@@ -234,7 +299,7 @@ const AcademicAnalytics = () => {
                   dataKey="value"
                   cornerRadius={5}
                   background={{
-                    fill: "hsl(220, 20%, 15%)",
+                    fill: "hsl(220,20%,15%)",
                   }}
                 />
               </RadialBarChart>
@@ -244,102 +309,84 @@ const AcademicAnalytics = () => {
           <p className="text-3xl font-bold font-mono text-primary -mt-10">
             {completion}%
           </p>
-          <p className="text-[10px] text-muted-foreground mt-1">
-            of {config.totalCredits} credits
-          </p>
+
         </div>
 
+      </div>
+
+      {/* Bottom Row */}
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+
         {/* Risk Indicator */}
+
         <div className="glass-card p-4">
+
           <h3 className="text-sm font-semibold mb-3">
             Risk Indicator
           </h3>
 
           <div className="flex items-center gap-3 mb-3">
+
             <AlertTriangle
               className={`h-8 w-8 ${riskColor}`}
             />
+
             <div>
               <p className={`text-lg font-bold ${riskColor}`}>
                 {riskLevel} Risk
               </p>
+
               <p className="text-xs text-muted-foreground">
                 Probability: {probability}%
               </p>
             </div>
+
           </div>
 
-          <div className="space-y-1.5">
-            {[
-              {
-                label: "Core",
-                ratio:
-                  credits.core /
-                  (config.coreCredits || 1),
-              },
-              {
-                label: "GE",
-                ratio:
-                  credits.ge /
-                  FIXED_REQUIREMENTS.ge,
-              },
-              {
-                label: "Experiential",
-                ratio:
-                  experiential /
-                  experientialTotal,
-              },
-            ].map((cat, i) => (
-              <div
-                key={cat.label}
-                className="flex items-center gap-2"
-              >
-                <span className="text-[10px] w-20">
-                  {cat.label}
-                </span>
-                <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full"
-                    style={{
-                      width: `${Math.min(
-                        100,
-                        cat.ratio * 100
-                      )}%`,
-                      backgroundColor: COLORS[i],
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Insight Summary */}
+        {/* Risk Segmentation */}
+
         <div className="glass-card p-4">
+
+          <h3 className="text-sm font-semibold mb-3">
+            Student Risk Segmentation
+          </h3>
+
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={riskSegments}>
+              <XAxis dataKey="level" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="hsl(155,70%,45%)" />
+            </BarChart>
+          </ResponsiveContainer>
+
+        </div>
+
+        {/* AI Insight Engine */}
+
+        <div className="glass-card p-4">
+
           <div className="flex items-center gap-2 mb-3">
             <Sparkles className="h-4 w-4 text-primary" />
             <h3 className="text-sm font-semibold">
-              Summary
+              AI Academic Insight Engine
             </h3>
           </div>
 
-          <div className="space-y-2">
-            {(prediction?.insights ?? [])
-              .slice(0, 3)
-              .map((ins, i) => (
-                <div
-                  key={i}
-                  className="flex items-start gap-2 rounded-md bg-muted/40 px-2.5 py-1.5"
-                >
-                  <TrendingUp className="h-3 w-3 mt-0.5 text-primary" />
-                  <p className="text-[11px] leading-relaxed">
-                    {ins}
-                  </p>
-                </div>
-              ))}
-          </div>
+          <p className="text-xs text-muted-foreground">
+            Student trajectory is currently aligned with expected
+            academic progress. Risk of delayed graduation remains
+            low. Maintaining consistent engagement in core
+            courses will further improve graduation certainty.
+          </p>
+
         </div>
+
       </div>
+
     </div>
   );
 };

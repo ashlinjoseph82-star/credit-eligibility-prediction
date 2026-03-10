@@ -1,5 +1,5 @@
 // -------------------------------------------
-// Academic AI Guard - Full API Layer (STABLE)
+// Academic AI Guard - Full API Layer (FIXED)
 // -------------------------------------------
 
 const BASE_URL = "http://127.0.0.1:8000";
@@ -29,7 +29,6 @@ export interface SummaryResponse {
   on_time_percentage: number;
 }
 
-// ✅ FIXED to match backend structure
 export interface ModelInfoResponse {
   version: string;
   selected_model: string;
@@ -39,14 +38,14 @@ export interface ModelInfoResponse {
     {
       accuracy: number;
       precision: number;
-      recall: number;
-      f1_score: number;
+      recall_delayed: number;
+      f1: number;
     }
   >;
 }
 
 // -------------------------------------------
-// INTERNAL FETCH HELPER
+// SAFE FETCH
 // -------------------------------------------
 
 async function safeFetch(url: string, options?: RequestInit) {
@@ -97,15 +96,19 @@ function mapModelName(uiModel: string): string {
 export async function predictStudent(data: {
   model: string;
   semester: number;
-  core_credits: number;
-  pep_credits: number;
-  humanities_credits: number;
-  internship_completed: number;
   failed_courses: number;
-  total_credits: number;
-  expected_credits: number;
-  deviation: number;
+
+  attendance_rate: number;
+  stress_level: number;
+  extracurricular_score: number;
+
+  internship_completed: number;
+  family_income_level: number;
+  part_time_job: number;
+  scholarship: number;
+  campus_resident: number;
 }): Promise<BackendPrediction> {
+
   return await safeFetch(`${BASE_URL}/predict`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -124,40 +127,38 @@ export async function predictRisk(
   const termNum =
     parseInt(request.term?.replace("Term ", "")) || 4;
 
-  const totalCredits =
-    Object.values(request.credits || {}).reduce(
-      (a: number, b: any) =>
-        a + (typeof b === "number" ? b : 0),
-      0
-    );
-
-  const expectedCredits = 20 * termNum;
-  const deviation = totalCredits - expectedCredits;
-
   const selectedModel = mapModelName(request.model);
+
+  // Example normalized values (replace later if needed)
+  const attendance = 0.85;
+  const stress = 0.4;
+  const extracurricular = 0.6;
 
   const backendResult = await predictStudent({
     model: selectedModel,
+
     semester: termNum,
-    core_credits: request.credits?.core ?? 0,
-    pep_credits: request.credits?.pep ?? 0,
-    humanities_credits: request.credits?.humanities ?? 0,
-    internship_completed: 0,
     failed_courses: 0,
-    total_credits: totalCredits,
-    expected_credits: expectedCredits,
-    deviation: deviation,
+
+    attendance_rate: attendance,
+    stress_level: stress,
+    extracurricular_score: extracurricular,
+
+    internship_completed: 0,
+    family_income_level: 2,
+    part_time_job: 0,
+    scholarship: 0,
+    campus_resident: 1,
   });
 
   return {
     risk_level: backendResult.risk_level,
     probability: backendResult.probability,
-    confidence: 100 - backendResult.probability, // more logical than fixed 90
+    confidence: 100 - backendResult.probability,
     insights: [
       `Model version ${backendResult.model_version} used.`,
       `Model selected: ${backendResult.model_used}.`,
       `Predicted outcome: ${backendResult.prediction}.`,
-      `Deviation from expected credits: ${deviation}.`,
     ],
   };
 }

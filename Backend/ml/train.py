@@ -6,7 +6,7 @@ from pathlib import Path
 from datetime import datetime
 
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, recall_score
+from sklearn.metrics import accuracy_score, f1_score, roc_auc_score, recall_score, precision_score
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
@@ -49,6 +49,7 @@ def get_next_version(existing_metadata):
 
 
 def train():
+
     print("Loading data...")
     df = load_data()
     df = df.dropna()
@@ -56,6 +57,7 @@ def train():
     # ---------------------------
     # Feature Engineering
     # ---------------------------
+
     df["academic_pressure"] = (
         df["failed_courses"] * 0.5 +
         df["stress_level"] * 0.3 +
@@ -98,6 +100,7 @@ def train():
     # ---------------------------
     # Preprocessing
     # ---------------------------
+
     numeric_scaled = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler())
@@ -123,8 +126,9 @@ def train():
     ])
 
     # ---------------------------
-    # 8 MODELS
+    # Models
     # ---------------------------
+
     models = {
 
         "logistic": Pipeline([
@@ -221,6 +225,7 @@ def train():
     # ---------------------------
     # Versioning
     # ---------------------------
+
     if METADATA_PATH.exists():
         with open(METADATA_PATH, "r") as f:
             metadata = json.load(f)
@@ -231,45 +236,76 @@ def train():
     version_dir = MODEL_DIR / version
     version_dir.mkdir(exist_ok=True)
 
-    print("\nTraining 8 models...\n")
+    print("\nTraining models...\n")
 
     results = {}
 
     for name, model in models.items():
 
         model.fit(X_train, y_train)
+
         y_pred = model.predict(X_test)
 
         acc = accuracy_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred, average="weighted")
-        recall_delayed = recall_score(y_test, y_pred, pos_label=1)
+
+        precision = precision_score(
+            y_test,
+            y_pred,
+            pos_label=1,
+            zero_division=0
+        )
+
+        recall_delayed = recall_score(
+            y_test,
+            y_pred,
+            pos_label=1,
+            zero_division=0
+        )
+
+        f1 = f1_score(
+            y_test,
+            y_pred,
+            zero_division=0
+        )
 
         probs = model.predict_proba(X_test)[:, 1]
         roc = roc_auc_score(y_test, probs)
 
-        print(f"{name.upper()} → Recall:{recall_delayed:.4f}  ROC:{roc:.4f}")
+        print(
+            f"{name.upper()} → "
+            f"Precision:{precision:.4f} "
+            f"Recall:{recall_delayed:.4f} "
+            f"ROC:{roc:.4f}"
+        )
 
         joblib.dump(model, version_dir / f"{name}.pkl")
 
         results[name] = {
             "accuracy": round(acc, 4),
+            "precision": round(precision, 4),
             "f1": round(f1, 4),
             "roc_auc": round(roc, 4),
             "recall_delayed": round(recall_delayed, 4)
         }
 
     # ---------------------------
-    # Select Best 3 (Recall Priority)
+    # Select Best 3
     # ---------------------------
+
     sorted_models = sorted(
         results.items(),
         key=lambda x: x[1]["recall_delayed"],
         reverse=True
     )
 
-    top_two = [sorted_models[0][0], sorted_models[1][0]]
-    production_models = ["logistic"] + top_two
-    production_models = list(set(production_models))
+    production_models = ["logistic"]
+
+    for model_name, _ in sorted_models:
+        if model_name != "logistic":
+            production_models.append(model_name)
+
+        if len(production_models) == 3:
+            break
 
     print("\nProduction Models Selected:")
     print(production_models)

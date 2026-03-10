@@ -25,11 +25,6 @@ export function ExecutivePanel() {
   const [modelInfo, setModelInfo] = useState<any>(null);
 
   const termNum = parseInt(term.replace("Term ", "")) || 4;
-  const config = DEGREE_OPTIONS[degree];
-
-  const totalEarned = getTotalEarned(credits);
-  const expectedCredits = getExpectedByTerm(degree, termNum);
-  const deviation = totalEarned - expectedCredits;
 
   // --------------------------------------------------
   // Fetch Prediction
@@ -39,15 +34,19 @@ export function ExecutivePanel() {
       try {
         const result = await predictStudent({
           model,
+
           semester: termNum,
-          core_credits: credits.core ?? 0,
-          pep_credits: credits.pep ?? 0,
-          humanities_credits: credits.humanities ?? 0,
-          internship_completed: 0,
           failed_courses: 0,
-          total_credits: totalEarned,
-          expected_credits: expectedCredits,
-          deviation: deviation,
+
+          attendance_rate: 0.85,
+          stress_level: 0.4,
+          extracurricular_score: 0.6,
+
+          internship_completed: 0,
+          family_income_level: 2,
+          part_time_job: 0,
+          scholarship: 0,
+          campus_resident: 1,
         });
 
         setPrediction(result);
@@ -57,7 +56,7 @@ export function ExecutivePanel() {
     }
 
     runPrediction();
-  }, [model, degree, term, credits]);
+  }, [model, term]);
 
   // --------------------------------------------------
   // Fetch Model Metrics
@@ -78,6 +77,7 @@ export function ExecutivePanel() {
   // --------------------------------------------------
   // Derived UI Values
   // --------------------------------------------------
+
   const riskLevel = prediction?.risk_level ?? "Medium";
   const probabilityPct = prediction?.probability ?? 0;
 
@@ -114,10 +114,10 @@ export function ExecutivePanel() {
       value: probabilityPct,
       fill:
         riskLevel === "Low"
-          ? "hsl(155, 70%, 45%)"
+          ? "hsl(155,70%,45%)"
           : riskLevel === "Medium"
-          ? "hsl(40, 85%, 55%)"
-          : "hsl(0, 72%, 55%)",
+          ? "hsl(40,85%,55%)"
+          : "hsl(0,72%,55%)",
     },
   ];
 
@@ -136,7 +136,7 @@ export function ExecutivePanel() {
     : "--";
 
   const recall = modelInfo
-    ? (modelInfo.metrics[selectedModel]?.recall * 100).toFixed(2)
+    ? (modelInfo.metrics[selectedModel]?.recall_delayed * 100).toFixed(2)
     : "--";
 
   return (
@@ -147,6 +147,7 @@ export function ExecutivePanel() {
             <h2 className="text-lg font-semibold">
               Executive Command Panel
             </h2>
+
             <span
               className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium ${riskBg} ${riskColor}`}
             >
@@ -155,25 +156,31 @@ export function ExecutivePanel() {
             </span>
           </div>
 
-          {/* ------------------ MODEL PERFORMANCE ------------------ */}
+          {/* MODEL PERFORMANCE */}
+
           <div className="grid grid-cols-2 gap-x-8 gap-y-3 lg:grid-cols-4">
+
             <MetricItem
               label="Risk Level"
               value={riskLevel}
               valueClass={riskColor}
             />
+
             <MetricItem
               label="Model Accuracy"
               value={`${accuracy}%`}
             />
+
             <MetricItem
               label="F1 Score"
               value={`${f1}%`}
             />
+
             <MetricItem
               label="Precision"
               value={`${precision}%`}
             />
+
             <MetricItem
               label="Recall"
               value={`${recall}%`}
@@ -188,7 +195,8 @@ export function ExecutivePanel() {
           </div>
         </div>
 
-        {/* ------------------ PREDICTION GAUGE ------------------ */}
+        {/* GAUGE */}
+
         <div className="flex-shrink-0 w-[130px] h-[130px]">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
@@ -204,13 +212,15 @@ export function ExecutivePanel() {
               <RadialBar
                 dataKey="value"
                 cornerRadius={4}
-                background={{ fill: "hsl(220, 20%, 15%)" }}
+                background={{ fill: "hsl(220,20%,15%)" }}
               />
             </RadialBarChart>
           </ResponsiveContainer>
+
           <p className="text-center -mt-12 text-2xl font-bold font-mono">
             {probabilityPct}%
           </p>
+
           <p className="text-center text-[10px] text-muted-foreground mt-0.5">
             Probability of Delay
           </p>
@@ -234,6 +244,7 @@ function MetricItem({
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
+
       <p className={`text-lg font-semibold font-mono ${valueClass}`}>
         {value}
       </p>

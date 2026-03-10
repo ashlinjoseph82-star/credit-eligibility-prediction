@@ -95,8 +95,7 @@ export function getTermsForDegree(degreeKey: string): string[] {
 export const AI_MODELS = [
   { id: "logistic", name: "Logistic Regression" },
   { id: "decision_tree", name: "Decision Tree" },
-  { id: "random_forest", name: "Random Forest" },
-  { id: "gradient_boosting", name: "Gradient Boosting" },
+  { id: "xgboost", name: "XGBoost" },
 ];
 
 

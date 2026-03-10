@@ -1,83 +1,72 @@
 {
-    "latest_version": "v2",
+    "latest_version": "v1",
     "history": [
         {
             "version": "v1",
             "models": {
                 "logistic": {
                     "accuracy": 0.635,
-                    "f1": 0.6365,
-                    "cv_f1": 0.6414,
-                    "roc_auc": 0.6925
-                },
-                "decision_tree": {
-                    "accuracy": 0.6265,
-                    "f1": 0.6277,
-                    "cv_f1": 0.6428,
-                    "roc_auc": 0.6705
-                },
-                "random_forest": {
-                    "accuracy": 0.653,
-                    "f1": 0.654,
-                    "cv_f1": 0.651,
-                    "roc_auc": 0.6948
-                },
-                "gradient_boosting": {
-                    "accuracy": 0.647,
-                    "f1": 0.6422,
-                    "cv_f1": 0.6544,
-                    "roc_auc": 0.6951
-                },
-                "xgboost": {
-                    "accuracy": 0.6435,
-                    "f1": 0.6451,
-                    "cv_f1": 0.6478,
-                    "roc_auc": 0.6933
-                }
-            },
-            "trained_on": "2026-03-02 19:08:53",
-            "dataset_size": 10000
-        },
-        {
-            "version": "v2",
-            "models": {
-                "logistic": {
-                    "accuracy": 0.635,
-                    "f1": 0.6365,
+                    "precision": 0.5702,
+                    "f1": 0.5967,
                     "roc_auc": 0.6925,
                     "recall_delayed": 0.6257
                 },
                 "decision_tree": {
                     "accuracy": 0.6265,
-                    "f1": 0.6277,
+                    "precision": 0.554,
+                    "f1": 0.6144,
                     "roc_auc": 0.6705,
                     "recall_delayed": 0.6895
                 },
                 "random_forest": {
                     "accuracy": 0.653,
-                    "f1": 0.654,
+                    "precision": 0.5923,
+                    "f1": 0.6097,
                     "roc_auc": 0.6948,
                     "recall_delayed": 0.628
                 },
+                "extra_trees": {
+                    "accuracy": 0.6595,
+                    "precision": 0.5972,
+                    "f1": 0.6215,
+                    "roc_auc": 0.6933,
+                    "recall_delayed": 0.6477
+                },
                 "gradient_boosting": {
                     "accuracy": 0.647,
-                    "f1": 0.6422,
+                    "precision": 0.6071,
+                    "f1": 0.5576,
                     "roc_auc": 0.6951,
                     "recall_delayed": 0.5156
                 },
                 "xgboost": {
                     "accuracy": 0.6435,
-                    "f1": 0.6451,
+                    "precision": 0.5773,
+                    "f1": 0.611,
                     "roc_auc": 0.6933,
                     "recall_delayed": 0.6489
+                },
+                "lightgbm": {
+                    "accuracy": 0.644,
+                    "precision": 0.6011,
+                    "f1": 0.5578,
+                    "roc_auc": 0.6808,
+                    "recall_delayed": 0.5203
+                },
+                "catboost": {
+                    "accuracy": 0.6565,
+                    "precision": 0.6205,
+                    "f1": 0.5687,
+                    "roc_auc": 0.6913,
+                    "recall_delayed": 0.5249
                 }
             },
             "production_models": [
                 "logistic",
-                "xgboost",
-                "decision_tree"
+                "decision_tree",
+                "xgboost"
             ],
-            "trained_on": "2026-03-02 19:15:56",
+            "trained_on": "2026-03-10 12:37:48",
             "dataset_size": 10000
         }
     ]
